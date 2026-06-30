@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import cast
 
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy import select, delete
@@ -35,8 +36,11 @@ router = APIRouter()
 
 
 def token_is_expired(expires_at: datetime) -> bool:
+    expires_at = cast(datetime, expires_at)
+
     if expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
+
     return expires_at <= datetime.now(timezone.utc)
 
 
