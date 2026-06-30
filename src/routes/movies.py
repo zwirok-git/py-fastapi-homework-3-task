@@ -44,8 +44,8 @@ router = APIRouter()
     }
 )
 async def get_movie_list(
-        page: Annotated[int, Query(1, ge=1, description="Page number (1-based index)")],
-        per_page: Annotated[int, Query(10, ge=1, le=20, description="Number of items per page")],
+        page: Annotated[int, Query(default=1, ge=1, description="Page number (1-based index)")],
+        per_page: Annotated[int, Query(default=10, ge=1, le=20, description="Number of items per page")],
         db: Annotated[AsyncSession, Depends(get_db)],
 ) -> MovieListResponseSchema:
     """
