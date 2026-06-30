@@ -3,6 +3,7 @@ from sqlalchemy import select, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
+from typing import Annotated
 
 from database import get_db, MovieModel
 from database import (
@@ -43,8 +44,8 @@ router = APIRouter()
     }
 )
 async def get_movie_list(
-        page: int = Query(1, ge=1, description="Page number (1-based index)"),
-        per_page: int = Query(10, ge=1, le=20, description="Number of items per page"),
+        page: Annotated[int, Query(1, ge=1, description="Page number (1-based index)")],
+        per_page: Annotated[int, Query(10, ge=1, le=20, description="Number of items per page")],
         db: Annotated[AsyncSession, Depends(get_db)],
 ) -> MovieListResponseSchema:
     """
