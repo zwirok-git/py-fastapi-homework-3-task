@@ -35,8 +35,11 @@ router = APIRouter()
 
 
 def token_is_expired(expires_at: datetime) -> bool:
+    expires_at = cast(datetime, expires_at)
+
     if expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
+
     return expires_at <= datetime.now(timezone.utc)
 
 
@@ -47,7 +50,7 @@ def token_is_expired(expires_at: datetime) -> bool:
 )
 async def register_user(
         user_data: UserRegistrationRequestSchema,
-        db: AsyncSession = Depends(get_db),
+        db: Annotated[AsyncSession, Depends(get_db)],
 ) -> UserRegistrationResponseSchema:
     stmt = select(UserModel).where(UserModel.email == user_data.email)
     result = await db.execute(stmt)
@@ -93,7 +96,7 @@ async def register_user(
 )
 async def activate_user(
         activation_data: UserActivationRequestSchema,
-        db: AsyncSession = Depends(get_db),
+        db: Annotated[AsyncSession, Depends(get_db)],
 ) -> MessageResponseSchema:
     stmt = (
         select(UserModel)
@@ -141,7 +144,7 @@ async def activate_user(
 )
 async def request_password_reset(
         reset_data: PasswordResetRequestSchema,
-        db: AsyncSession = Depends(get_db),
+        db: Annotated[AsyncSession, Depends(get_db)],
 ) -> MessageResponseSchema:
     message = ("If you are registered, "
                "you will receive an email with instructions.")
@@ -170,7 +173,7 @@ async def request_password_reset(
 )
 async def complete_password_reset(
         reset_data: PasswordResetCompleteRequestSchema,
-        db: AsyncSession = Depends(get_db),
+        db: Annotated[AsyncSession, Depends(get_db)],
 ) -> MessageResponseSchema:
     stmt = (
         select(UserModel)
@@ -224,9 +227,13 @@ async def complete_password_reset(
 )
 async def login_user(
         login_data: UserLoginRequestSchema,
-        db: AsyncSession = Depends(get_db),
-        jwt_manager: JWTAuthManagerInterface = Depends(get_jwt_auth_manager),
-        settings: BaseAppSettings = Depends(get_settings),
+        db: Annotated[AsyncSession, Depends(get_db)],
+        jwt_manager: Annotated[
+            JWTAuthManagerInterface, Depends(get_jwt_auth_manager)
+        ],
+        settings: Annotated[
+            BaseAppSettings, Depends(get_settings)
+        ],
 ) -> UserLoginResponseSchema:
     stmt = select(UserModel).where(UserModel.email == login_data.email)
     result = await db.execute(stmt)
@@ -274,8 +281,10 @@ async def login_user(
 )
 async def refresh_access_token(
         token_data: TokenRefreshRequestSchema,
-        db: AsyncSession = Depends(get_db),
-        jwt_manager: JWTAuthManagerInterface = Depends(get_jwt_auth_manager),
+        db: Annotated[AsyncSession, Depends(get_db)],
+        jwt_manager: Annotated[
+            JWTAuthManagerInterface, Depends(get_jwt_auth_manager)
+        ],
 ) -> TokenRefreshResponseSchema:
     try:
         payload = jwt_manager.decode_refresh_token(token_data.refresh_token)
